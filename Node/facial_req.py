@@ -30,6 +30,7 @@ config = {
 firebase = Firebase(config)
 auth = firebase.auth()
 db = firebase.database()
+storage = firebase.storage()
 
 #Using threading as timer interupt for status report
 def status():
@@ -123,7 +124,16 @@ while True:
 				person_info = {"node_id": node_id, "time": t.strftime("%H:%M:%S - %d %m %Y"),
                                "name": currentname}
 				db.push(person_info)
-		
+		else:
+			current_t = datetime.now()
+			if (current_t-t)>dt:
+				t = current_t
+				filename = "unknown/" + t.strftime("%H:%M:%S - %d %m %Y") +".jpg"
+				cv2.imgwrite(filename, frame)
+				person_info = {"node_id": node_id, "time": t.strftime("%H:%M:%S - %d %m %Y"),
+					      "name": "unknown"}
+				db.push(person_info)
+				storage.child("images/" + node_id + "/" + filename).put(filename)
 		# update the list of names
 		names.append(name)
 
