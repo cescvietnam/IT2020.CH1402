@@ -8,6 +8,36 @@ import imutils
 import pickle
 import time
 import cv2
+import firebase_admin
+from firebase import Firebase
+import uuid
+from datetime import datetime, timedelta
+import time, threading
+
+#initiate node_id and starting time
+node_id = uuid.getnode()
+t = datetime.now()
+dt = timedelta(minutes=1)
+
+
+#initiate connection to firebase database
+config = {
+    "apiKey": "AIzaSyA_AfP0OXynA4emDnUn82qJDka3zvLkXwA",
+    "authDomain": "login-firebase-f0068.firebaseapp.com",
+    "databaseURL": "https://login-firebase-f0068-default-rtdb.firebaseio.com",
+    "storageBucket": "login-firebase-f0068.appspot.com"
+    }
+firebase = Firebase(config)
+auth = firebase.auth()
+db = firebase.database()
+
+#Using threading as timer interupt for status report
+def status():
+	report_status = {"node_id": node_id, "status": "running"}
+	print(report_status)
+	db.push(report_status)
+	threading.Timer(10, status).start()
+status()
 
 #Initialize 'currentname' to trigger only when a new person is identified.
 currentname = "unknown"
@@ -83,11 +113,16 @@ while True:
 			# of votes (note: in the event of an unlikely tie Python
 			# will select first entry in the dictionary)
 			name = max(counts, key=counts.get)
+			current_t = datetime.now()
 			
 			#If someone in your dataset is identified, print their name on the screen
-			if currentname != name:
+			if currentname != name or (current_t - t)>dt:
+				t = current_t
 				currentname = name
 				print(currentname)
+				person_info = {"node_id": node_id, "time": t.strftime("%H:%M:%S - %d %m %Y"),
+                               "name": currentname}
+				db.push(person_info)
 		
 		# update the list of names
 		names.append(name)
