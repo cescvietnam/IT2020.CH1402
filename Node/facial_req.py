@@ -17,7 +17,7 @@ import time, threading
 #initiate node_id and starting time
 node_id = uuid.getnode()
 t = datetime.now()
-dt = timedelta(minutes=1)
+dt = timedelta(seconds=10)
 
 
 #initiate connection to firebase database
@@ -38,7 +38,7 @@ def status():
 	print(report_status)
 	db.push(report_status)
 	threading.Timer(10, status).start()
-status()
+#status()
 
 #Initialize 'currentname' to trigger only when a new person is identified.
 currentname = "unknown"
@@ -123,17 +123,17 @@ while True:
 				print(currentname)
 				person_info = {"node_id": node_id, "time": t.strftime("%H:%M:%S - %d %m %Y"),
                                "name": currentname}
-				db.push(person_info)
+				#db.push(person_info)
 		else:
 			current_t = datetime.now()
 			if (current_t-t)>dt:
 				t = current_t
 				filename = "unknown/" + t.strftime("%H:%M:%S - %d %m %Y") +".jpg"
-				cv2.imgwrite(filename, frame)
+				cv2.imwrite(filename, frame)
 				person_info = {"node_id": node_id, "time": t.strftime("%H:%M:%S - %d %m %Y"),
 					      "name": "unknown"}
-				db.push(person_info)
-				storage.child("images/" + node_id + "/" + filename).put(filename)
+				#db.push(person_info)
+				#storage.child("images/" + str(node_id) + "/" + filename).put(filename)
 		# update the list of names
 		names.append(name)
 
